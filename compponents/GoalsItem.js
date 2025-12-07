@@ -14,14 +14,20 @@ function GoalsItem( props) {
         // </Pressable>
 
         // using same apporahch with pressed effect in the text also
-        <Pressable 
-            style={({ pressed }) => [styles.goalItem, pressed && styles.pressed]}
-            onPress={() => {console.log('Goal pressed:', props.item); }}>
-            {({ pressed }) => (
-                <Text style={[styles.goalText, pressed && styles.pressedText]}>
-                    {props.item}
-                </Text>
-            )}
+        // <Pressable 
+        //     style={({ pressed }) => [styles.goalItem, pressed && styles.pressed]}
+        //     onPress={props.onDeleteGoal.bind(this, props.index)}>
+        //     {({ pressed }) => (
+        //         <Text style={[styles.goalText, pressed && styles.pressedText]}>
+        //             {props.item}
+        //         </Text>
+        //     )}
+        // </Pressable>
+        // pressable wrapping the whole view and using ripple effect for android & IOS
+        <Pressable android_ripple={{color : '#ffffff'}} onPress={props.onDeleteGoal.bind(this, props.index)}>
+            <View key={props.index} style={styles.goalItem}>
+             <Text style={styles.goalText}>{props.item}</Text>
+          </View>
         </Pressable>
     )
     
@@ -30,10 +36,10 @@ export default GoalsItem;
 const styles = StyleSheet.create({
     goalItem :{ 
         borderWidth: 1,
-        borderColor: '#7dd5f5ff', 
+        borderColor: '#59065fff', 
         padding: 8, 
         marginVertical: 8, 
-        backgroundColor: '#7dd5f5ff',
+        backgroundColor: '#59065fff',
         borderRadius: 6,
      },
         goalText:{
