@@ -1,55 +1,58 @@
-import {StyleSheet, View, TextInput, ScrollView, FlatList ,Alert ,Button} from 'react-native';
-import { useState } from 'react';
-import GoalsItem from './compponents/GoalsItem';
-import GoalsInput from './compponents/GoalsInput';
+import { StyleSheet, View, Text, Button, Image ,Alert} from 'react-native';
+import { useState } from 'react'
 import { StatusBar } from 'expo-status-bar';
+import { Colors } from './Colors/color';
+import AddGroceryItems from './compponents/AddGroceryItems';
+import GroceryItemsLists from './compponents/GroceryItemsLists';
 export default function App() {
-  const [courseGoals, setCourseGoals] = useState([]);
-  const [modalVisible , setModalVisibility] = useState(false);
-  function setGoalsOnPressHandlers(enteredGoal) {
-    if(enteredGoal.length === 0){
-      Alert.alert('Empty Goal', 'Please enter a goal before adding!');
-      return ;
-    }
-    setCourseGoals(currentGoals => [...currentGoals, enteredGoal]);
-    endModalVisibleHandler();
+  const [groceryItems, setGroceryItems] = useState([]);
+  const [openModal, setOpenModal] = useState(false);
+  const [enteredGroceryItem, setEnteredGroceryItem] = useState({ id: '', value: '', completed: false });
+
+  function openModalHandler() {
+    setEnteredGroceryItem({ id: Date.now().toString(), value: '', completed: false });
+    setOpenModal(true)
   }
-  function deleteGoalsHandler(id){
-    setCourseGoals(currentGoals => {
-      return currentGoals.filter((goal, index) => index !== id);
-    }) 
+  function closeModalHandler() {
+    setEnteredGroceryItem({ id: '', value: '', completed: false });
+    setOpenModal(false)
   }
-  function setModalVisibleHandler(){
-    setModalVisibility(true);
+  function addItemHandler(item) {
+    setGroceryItems((currentItems) => [...currentItems, item]);
+    closeModalHandler();
   }
-  function endModalVisibleHandler(){
-    setModalVisibility(false);
+  function toggleItemHandler(id) {
+    setGroceryItems((items) => items.map((item) => item.id === id ? { ...item, completed: !item.completed } : item ) );
+  }
+  function deleteItemHandler(id) {
+    Alert.alert('Delete Item', 'Are you sure you want to delete this item?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: () => {
+          setGroceryItems((items) => items.filter((item) => item.id !== id));
+        },
+      },
+    ]);
   }
   return (
     <>
-    <StatusBar style="light"/>
-    <View style={styles.container}>
-      {/* normal approach */}
-      {/* <GoalsInput  setGoalsOnPressHandlers={setGoalsOnPressHandlers} /> */}
-      {/* using modal approach */}
-      <Button title='Add New Goal' color={'#c465edff'} onPress={setModalVisibleHandler} />
-      {modalVisible && <GoalsInput visible={modalVisible} setGoalsOnPressHandlers={setGoalsOnPressHandlers} onCancel={endModalVisibleHandler} />}
-      <View style={styles.courseGoalsContainer}>
-        {/* <ScrollView>
-          {courseGoals.map((goal, index) => (
-            <View key={index} style={{borderWidth: 1, borderColor: '#cccccc', padding: 8, marginVertical: 8, backgroundColor: '#e4e4e4'}}>
-              <Text>{goal}</Text>
-            </View>
-          ))}
-        </ScrollView> normal approach to do this  */}
-        <FlatList data={courseGoals} renderItem={({ item, index }) => {
-          return ( <GoalsItem index={index} item={item} onDeleteGoal={deleteGoalsHandler} /> )
-        }} 
-        keyExtractor={(item, index) => index.toString()}
-        />
+      <StatusBar style="light" />
+      <View style={styles.container}>
+        <Text style={styles.headerText}>Grocery Checklist</Text>
+        <View style={styles.addItemBtnContainer}>
+          <Button title="Add Item" color={Colors.text} onPress={openModalHandler} />
+        </View>
+        <AddGroceryItems visible={openModal} onAdd={addItemHandler} onClose={closeModalHandler} groceriesAll={groceryItems} grocery={enteredGroceryItem} setOneGrocery={setEnteredGroceryItem} />
+        {groceryItems.length == 0 &&
+          <View style={styles.imageContainer}>
+            <Image source={require('./assets/images/emptyCart.png')} style={styles.image} />
+            <Text style={styles.headerText}>No items in your grocery list</Text>
+          </View>}
+        {groceryItems.length > 0 && <GroceryItemsLists groceries={groceryItems} onToggle={toggleItemHandler} onLongPress={deleteItemHandler} />}
       </View>
-    </View>
-    </> 
+    </>
   );
 }
 
@@ -58,26 +61,37 @@ const styles = StyleSheet.create({
     paddingTop: 50,
     paddingHorizontal: 16,
     flex: 1,
-    backgroundColor : '#1e085a'
+    backgroundColor: Colors.primary
   },
-  textInputContainer: {
-    flex: 1,
+  headerText: {
+    color: Colors.text,
+    textAlign: 'center',
+    fontSize: 24,
+    fontWeight: 'bold',
     flexDirection: 'row',
-    marginHorizontal: 8,
+    justifyContent: 'center',
     alignItems: 'center',
-    borderBottomWidth: 2,
-    borderColor: '#cccccc',
-    padding: 8,
-    marginVertical: 36
+    marginBottom: 20,
   },
-  textInput: {
-    width: '70%',
-    borderWidth: 1,
-    borderColor: '#cccccc',
-    padding: 8,
-    marginRight: 8
+  addItemBtnContainer: {
+    marginVertical: 16,
+    color: Colors.secondary,
+    backgroundColor: Colors.background,
+    borderRadius: 8,
+    fontWeight: 'bold',
+    // flexDirection : 'row',
+    // justifyContent : 'center',
+    // alignItems : 'center',
   },
-  courseGoalsContainer: {
-    flex: 6,
+  image: {
+    width: 200,
+    height: 200,
+  },
+  imageContainer: {
+    justifyContent: 'start',
+    alignItems: 'center',
+    backgroundColor: Colors.secondary,
+    borderRadius: 8,
+    marginVertical: '40%',
   }
 });
